@@ -108,33 +108,33 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 k=4
 neigh=KNeighborsClassifier(n_neighbors=k).fit(X_train,y_train)
-yhat=neigh.predict(X_test)
+yKNNhat=neigh.predict(X_test)
 Trainset_accuracy_initial=metrics.accuracy_score(y_train, neigh.predict(X_train))
 print('Trainset accuracy initial', Trainset_accuracy_initial)
-Testset_accuracy_initial=metrics.accuracy_score(y_test, yhat)
+Testset_accuracy_initialKNN=metrics.accuracy_score(y_test, yKNNhat)
 print('Testset accuracy initial', Testset_accuracy_initial)
 #Compare k value
 Ks = 10
-mean_acc = np.zeros((Ks-1))
-std_acc = np.zeros((Ks-1))
-ConfustionMx = [];
+mean_accKNN = np.zeros((Ks-1))
+std_accKNN = np.zeros((Ks-1))
+ConfustionMxKNN = [];
 for n in range(1,Ks):
     
     #Train Model and Predict  
     neigh = KNeighborsClassifier(n_neighbors = n).fit(X_train,y_train)
-    yhat=neigh.predict(X_test)
-    mean_acc[n-1] = metrics.accuracy_score(y_test, yhat)
+    yKNNhat=neigh.predict(X_test)
+    mean_accKNNN[n-1] = metrics.accuracy_score(y_test, yKNNhat)
 
     
-    std_acc[n-1]=np.std(yhat==y_test)/np.sqrt(yhat.shape[0])
+    std_accKNN[n-1] = np.std(yhat==y_test)/np.sqrt(yKNNhat.shape[0])
 
-mean_acc
-k_new=mean_acc.argmax()+1
+mean_accKNN
+k_new = mean_accKNN.argmax()+1
 print(metrics.confusion_matrix(y_test,yhat))
 
 #Plot neighbor accuracy for different k
-plt.plot(range(1,Ks),mean_acc,'g')
-plt.fill_between(range(1,Ks),mean_acc - 1 * std_acc,mean_acc + 1 * std_acc, alpha=0.10)
+plt.plot(range(1,Ks),mean_accKNN,'g')
+plt.fill_between(range(1,Ks),mean_accKNN - 1 * std_accKNN,mean_accKNN + 1 * std_accKNN, alpha=0.10)
 plt.legend(('Accuracy ', '+/- 3xstd'))
 plt.ylabel('Accuracy ')
 plt.xlabel('Number of Neibors (K)')
@@ -142,7 +142,45 @@ plt.tight_layout()
 plt.show()
 
 #RESULT
-print( "The best accuracy was with", mean_acc.max(), "with k=", mean_acc.argmax()+1)
+print( "The best accuracy was with", mean_accKNN.max(), "with k=", mean_accKNN.argmax()+1)
+
+
+
+#DECISION TREE
+
+decisionTree = DecisionTreeClassifier(criterion="entropy", max_depth = 4)
+decisionTree # it shows the default parameters
+
+decisionTree.fit(X_train,y_train)
+
+predTree = drugTree.predict(X_test)
+
+#Results of training module
+print (predTree [0:5])
+print (y_test [0:5])
+print("DecisionTrees's Accuracy while training: ", metrics.accuracy_score(y_test, predTree))
+
+# Notice: You might need to uncomment and install the pydotplus and graphviz libraries if you have not installed these before
+# !conda install -c conda-forge pydotplus -y
+# !conda install -c conda-forge python-graphviz -y
+
+from sklearn.externals.six import StringIO
+import pydotplus
+import matplotlib.image as mpimg
+from sklearn import tree
+%matplotlib inline 
+
+dot_data = StringIO()
+filename = "decisiontree.png"
+featureNames = df.columns[0:5]
+targetNames = my_data["Drug"].unique().tolist()
+out=tree.export_graphviz(decisionTree,feature_names=featureNames, out_file=dot_data, class_names= np.unique(y_train), filled=True,  special_characters=True,rotate=False)  
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+graph.write_png(filename)
+img = mpimg.imread(filename)
+plt.figure(figsize=(100, 200))
+plt.imshow(img,interpolation='nearest')
+
 
 #----------------------------------
 
@@ -180,15 +218,22 @@ y_test_df = test_df['loan_status'].values
 #--------------------
 #KNN Model Evaluation
 
-neigh=KNeighborsClassifier(n_neighbors=k).fit(X_test_df,y_test_df)
-yhat_test_df=neigh.predict(X_test_df)
-KNN_Jaccard_accuracy=sklearn.metrics.jaccard_similarity_score(y_test_df, yhat_test_df)
-KNN_F1score_accuracy=sklearn.metrics.F1_score(y_test_df, yhat_test_df)
+yKNNhat_test_df=neigh.predict(X_test_df)
+KNN_Jaccard_accuracy=sklearn.metrics.jaccard_similarity_score(y_test_df, yKNNhat_test_df)
+KNN_F1score_accuracy=sklearn.metrics.F1_score(y_test_df, yKNNhat_test_df)
 
 #Accuracy Scores for KNN model
 print('Jaccard of KNN model on loan test %.6f', KNN_Jaccard_accuracy)
 print('F1 score of KNN model on loan test %.6f', KNN_F1score_accuracy)
+
 #---------------------
+#Decision Tree Model Evaluation
 
-#
+predTree_test_df = decisionTree.predict(X_test_df)
+DT_Jaccard_accuracy=sklearn.metrics.jaccard_similarity_score(y_test_df, predTree_test_df)
+DT_F1score_accuracy=sklearn.metrics.F1_score(y_test_df, predTree_test_df)
+DT_LogLoss_accuracy=sklearn.metrics.log_loss(y_test_df,predTree_test_df)
 
+#Accuracy Scores for KNN model
+print('Jaccard of Decision Tree model on loan test %.6f', DT_Jaccard_accuracy)
+print('F1 score of Decision Tree model on loan test %.6f', DT_F1score_accuracy)
