@@ -158,6 +158,10 @@ predTree = drugTree.predict(X_test)
 #Results of training module
 print (predTree [0:5])
 print (y_test [0:5])
+
+from sklearn.metrics import classification_report, confusion_matrix
+print(confusion_matrix(y_test, predTree))
+print(classification_report(y_test, predTree))
 print("DecisionTrees's Accuracy while training: ", metrics.accuracy_score(y_test, predTree))
 
 # Notice: You might need to uncomment and install the pydotplus and graphviz libraries if you have not installed these before
@@ -234,6 +238,10 @@ DT_Jaccard_accuracy=sklearn.metrics.jaccard_similarity_score(y_test_df, predTree
 DT_F1score_accuracy=sklearn.metrics.F1_score(y_test_df, predTree_test_df)
 DT_LogLoss_accuracy=sklearn.metrics.log_loss(y_test_df,predTree_test_df)
 
+print(confusion_matrix(y_test_df, predTree_test_df))
+print(classification_report(y_test_df, predTree_test_df))
+
 #Accuracy Scores for KNN model
 print('Jaccard of Decision Tree model on loan test %.6f', DT_Jaccard_accuracy)
 print('F1 score of Decision Tree model on loan test %.6f', DT_F1score_accuracy)
+print('Log Loss of Decision Tree model on loan test %.6f', DT_LogLoss_accuracy)
